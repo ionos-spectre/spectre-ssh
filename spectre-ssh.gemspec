@@ -21,5 +21,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_runtime_dependency 'openssl', '~> 2.2.0'
+  spec.add_runtime_dependency 'net-ssh', '~> 6.1.0'
   spec.add_runtime_dependency 'spectre-core', '>= 1.8.4'
 end
