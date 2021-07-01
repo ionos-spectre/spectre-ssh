@@ -6,15 +6,15 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'SSH module for spectre'
   spec.description   = 'Adds SSH access functionality to the spectre framework'
-  spec.homepage      = 'https://bitbucket.org/cneubaur/spectre-ssh'
+  spec.homepage      = 'https://github.com/cneubauer/spectre-ssh'
   spec.license       = 'MIT'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org/'
 
   spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = 'https://bitbucket.org/cneubaur/spectre-ssh'
-  spec.metadata['changelog_uri'] = 'https://bitbucket.org/cneubaur/spectre-ssh/src/master/CHANGELOG.md'
+  spec.metadata['source_code_uri'] = 'https://github.com/cneubauer/spectre-ssh'
+  spec.metadata['changelog_uri'] = 'https://github.com/cneubauer/spectre-ssh/blob/master/CHANGELOG.md'
 
   spec.files        += Dir.glob('lib/**/*')
 
