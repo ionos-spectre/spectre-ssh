@@ -1,12 +1,13 @@
 require 'net/ssh'
 require 'logger'
+require 'spectre'
 
 
 module Spectre
   module SSH
     @@cfg = {}
 
-    class SSHConnection < DslClass
+    class SSHConnection < Spectre::DslClass
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 
