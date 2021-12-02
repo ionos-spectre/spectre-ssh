@@ -1,8 +1,8 @@
 # Spectre SSH
 
-[![Build Status](https://www.travis-ci.com/cneubaur/spectre-ssh.svg?branch=master)](https://www.travis-ci.com/cneubaur/spectre-ssh)
+[![Gem Version](https://badge.fury.io/rb/spectre-ssh.svg)](https://badge.fury.io/rb/spectre-ssh)
 
-This is a [spectre](https://github.com/cneubauer/spectre-core) module which provides SSH access functionality to the spectre framework.
+This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which provides SSH access functionality to the spectre framework.
 
 ## Install
 
