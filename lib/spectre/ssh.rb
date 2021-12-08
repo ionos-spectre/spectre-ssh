@@ -7,6 +7,12 @@ module Spectre
   module SSH
     @@cfg = {}
 
+    class SSHError < Exception
+      def initialize message
+        super message
+      end
+    end
+
     class SSHConnection < Spectre::DslClass
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
@@ -32,7 +38,11 @@ module Spectre
 
       def connect!
         return unless @__session == nil or @__session.closed?
-        @__session = Net::SSH.start(@__host, @__username, @__opts)
+        begin
+          @__session = Net::SSH.start(@__host, @__username, @__opts)
+        rescue SocketError
+          raise SSHError.new("Unable to connect to #{@__host} with user #{@__username}")
+        end
       end
 
       def close
