@@ -1,3 +1,9 @@
+### v1.0.1
+
+#### Minor
+ - Internal gem dependencies fixed
+
+
 ### v1.0.0
 
 #### Major
