@@ -7,7 +7,7 @@ This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which 
 ## Install
 
 ```bash
-$ gem install spectre-ssh
+$ sudo gem install spectre-ssh
 ```
 
 ## Configure
