@@ -31,13 +31,13 @@ ssh:
 
 ## Usage
 
-With the SSH helper you can define SSH connection parameter in the environment file and use the `ssh` function in your specs.
+With the SSH helper you can define SSH connection parameters in the environment file and use the `ssh` function in your specs.
 
 Within the `ssh` block there are the following functions available
 
 | Method         | Parameters  | Description                                            |
 | -------        | ----------  | -----------                                            |
-| `file_exists`  | `file_path` | Checks if a file exists and return a boolean value     |
+| `file_exists`  | `file_path` | Checks if a file exists and returns a boolean value    |
 | `owner_of`     | `file_path` | Returns the owner of a given file                      |
 | `can_connect?` | _none_      | Returns `true` if a connection could be established    |
 | `exec`         | `command`   | Executes a command via SSH                             |
