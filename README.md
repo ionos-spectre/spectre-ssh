@@ -1,5 +1,7 @@
 # Spectre SSH
 
+[![Build](https://github.com/ionos-spectre/spectre-ssh/actions/workflows/build.yml/badge.svg)](https://github.com/ionos-spectre/spectre-ssh/actions/workflows/build.yml)
+
 [![Gem Version](https://badge.fury.io/rb/spectre-ssh.svg)](https://badge.fury.io/rb/spectre-ssh)
 
 This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which provides SSH access functionality to the spectre framework.
