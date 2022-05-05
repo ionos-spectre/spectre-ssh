@@ -7,7 +7,7 @@ This is a [spectre](https://github.com/ionos-spectre/spectre-core) module which 
 ## Install
 
 ```bash
-gem install spectre-ssh
+$ sudo gem install spectre-ssh
 ```
 
 ## Configure
@@ -31,17 +31,17 @@ ssh:
 
 ## Usage
 
-With the SSH helper you can define SSH connection parameter in the environment file and use the `ssh` function in your specs.
+With the SSH helper you can define SSH connection parameters in the environment file and use the `ssh` function in your specs.
 
 Within the `ssh` block there are the following functions available
 
-| Method | Parameters | Description |
-| -------| ---------- | ----------- |
-| `file_exists` | `file_path` | Checks if a file exists and return a boolean value |
-| `owner_of` | `file_path` | Returns the owner of a given file |
-| `can_connect?` | _none_ | Returns `true` if a connection could be established |
-| `exec` | `command` | Executes a command via SSH |
-| `output` | _none_ | The output of the SSH command, which was last executed |
+| Method         | Parameters  | Description                                            |
+| -------        | ----------  | -----------                                            |
+| `file_exists`  | `file_path` | Checks if a file exists and returns a boolean value    |
+| `owner_of`     | `file_path` | Returns the owner of a given file                      |
+| `can_connect?` | _none_      | Returns `true` if a connection could be established    |
+| `exec`         | `command`   | Executes a command via SSH                             |
+| `output`       | _none_      | The output of the SSH command, which was last executed |
 
 
 ```ruby
