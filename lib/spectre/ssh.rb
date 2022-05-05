@@ -7,6 +7,12 @@ module Spectre
   module SSH
     @@cfg = {}
 
+    class SSHError < Exception
+      def initialize message
+        super message
+      end
+    end
+
     class SSHConnection < Spectre::DslClass
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
@@ -32,7 +38,13 @@ module Spectre
 
       def connect!
         return unless @__session == nil or @__session.closed?
-        @__session = Net::SSH.start(@__host, @__username, @__opts)
+        begin
+          @__session = Net::SSH.start(@__host, @__username, @__opts)
+        rescue SocketError
+          raise SSHError.new("Unable to connect to #{@__host} with user #{@__username}")
+        rescue Net::SSH::AuthenticationFailed
+          raise SSHError.new("Authentication failed for #{@__username}@#{@__host}. Please check password, SSH keys and passphrases.")
+        end
       end
 
       def close
@@ -106,24 +118,26 @@ module Spectre
 
 
     class << self
-      def ssh name, config = {}, &block
-        raise "SSH connection '#{name}' not configured" unless @@cfg.key?(name) or config.count > 0
+      def ssh name, options = {}, &block
+        raise "SSH connection '#{name}' not configured" unless @@cfg.key?(name) or options.count > 0
 
         cfg = @@cfg[name] || {}
 
         host = cfg['host'] || name
-        username = config[:username] || cfg['username']
-        password = config[:password] || cfg['password']
+        username = options[:username] || cfg['username']
+        password = options[:password] || cfg['password']
 
         opts = {}
         opts[:password] = password
-        opts[:port] = config[:port] || cfg['port'] || 22
-        opts[:keys] = [cfg['key']] if cfg.key? 'key'
-        opts[:passphrase] = cfg['passphrase'] if cfg.key? 'passphrase'
+        opts[:port] = options[:port] || cfg['port'] || 22
+
+        ssh_key = options[:key] || cfg['key']
+        opts[:keys] = [ssh_key] unless ssh_key.nil?
+        opts[:passphrase] = options[:passphrase] || cfg['passphrase']
 
         opts[:auth_methods] = []
-        opts[:auth_methods].push 'publickey' if opts[:keys]
-        opts[:auth_methods].push 'password' if opts[:password]
+        opts[:auth_methods].push 'publickey' unless opts[:keys].nil? or opts[:keys].empty?
+        opts[:auth_methods].push 'password' unless opts[:password].nil?
 
         ssh_con = SSHConnection.new(host, username, opts, @@logger)
 
