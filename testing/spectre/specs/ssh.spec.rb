@@ -25,7 +25,7 @@ describe 'spectre/ssh' do
 
       expect 'a logs directory in root directory' do
         exec 'ls'
-        fail_with "no 'logs' directory" if not output.lines.include? "logs\n"
+        fail_with "no 'logs' directory" unless output.lines.include? "logs\n"
       end
     end
   end
@@ -36,7 +36,7 @@ describe 'spectre/ssh' do
 
       expect 'a logs directory in root directory' do
         exec 'ls'
-        fail_with "no 'logs' directory" if not output.lines.include? "logs\n"
+        fail_with "no 'logs' directory" unless output.lines.include? "logs\n"
       end
     end
   end
@@ -47,7 +47,7 @@ describe 'spectre/ssh' do
         log 'try to list files from user root'
 
         exec 'ls'
-        fail_with "no 'logs' directory" if not output.lines.include? "logs\n"
+        fail_with "no 'logs' directory" unless output.lines.include? "logs\n"
       end
     end
 

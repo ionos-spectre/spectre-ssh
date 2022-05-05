@@ -8,9 +8,6 @@ module Spectre
     @@cfg = {}
 
     class SSHError < Exception
-      def initialize message
-        super message
-      end
     end
 
     class SSHConnection < Spectre::DslClass
@@ -38,6 +35,7 @@ module Spectre
 
       def connect!
         return unless @__session == nil or @__session.closed?
+
         begin
           @__session = Net::SSH.start(@__host, @__username, @__opts)
         rescue SocketError
@@ -49,6 +47,7 @@ module Spectre
 
       def close
         return unless @__session and not @__session.closed?
+
         @__session.close
       end
 
@@ -76,20 +75,20 @@ module Spectre
         log_str = "#{@__session.options[:user]}@#{@__session.host} -p #{@__session.options[:port]} #{command}"
 
         @channel = @__session.open_channel do |channel|
-          channel.exec(command) do |ch, success|
+          channel.exec(command) do |_ch, success|
             abort "could not execute #{command} on #{@__session.host}" unless success
 
             @__output = ''
 
-            channel.on_data do |ch, data|
+            channel.on_data do |_, data|
               @__output += data
             end
 
-            channel.on_extended_data do |ch,type,data|
+            channel.on_extended_data do |_, _type, data|
               @__output += data
             end
 
-            channel.on_request('exit-status') do |ch, data|
+            channel.on_request('exit-status') do |_, data|
               @__exit_code = data.read_long
             end
 
@@ -97,7 +96,6 @@ module Spectre
             #   exit_code = data.read_long
             # end
           end
-
         end
 
         @channel.wait
