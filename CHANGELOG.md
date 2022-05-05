@@ -1,4 +1,4 @@
-### vNext
+### v1.0.2
 
 #### Minor
  - Custom error class added. Will be used to output more detailed error messages on SSH errors.
