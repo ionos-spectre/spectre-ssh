@@ -1,5 +1,5 @@
 describe 'spectre/ssh' do
-  it 'can connect with SSH', tags: [:ssh, :deps] do
+  it 'can connect with password', tags: [:ssh, :password, :deps] do
     ssh 'localhost', port: 2222, username: 'developer', password: 'dev' do
       info 'trying to connect'
 
@@ -19,7 +19,7 @@ describe 'spectre/ssh' do
     end
   end
 
-  it 'can connect with SSH', tags: [:ssh, :deps] do
+  it 'can execute commands on server', tags: [:ssh, :deps] do
     ssh 'localhost', port: 2222, username: 'developer', password: 'dev' do
       log 'try to list files from user root'
 
@@ -27,6 +27,32 @@ describe 'spectre/ssh' do
         exec 'ls'
         fail_with "no 'logs' directory" if not output.lines.include? "logs\n"
       end
+    end
+  end
+
+  it 'can connect with ssh key', tags: [:ssh, :key, :deps] do
+    ssh 'localhost', port: 2222, username: 'developer', key: resources['sample_key'], passphrase: 'test' do
+      log 'try to list files from user root'
+
+      expect 'a logs directory in root directory' do
+        exec 'ls'
+        fail_with "no 'logs' directory" if not output.lines.include? "logs\n"
+      end
+    end
+  end
+
+  it 'does not authenticate without passphrase', tags: [:ssh, :key, :deps] do
+    observe do
+      ssh 'localhost', port: 2222, username: 'developer', key: resources['sample_key'] do
+        log 'try to list files from user root'
+
+        exec 'ls'
+        fail_with "no 'logs' directory" if not output.lines.include? "logs\n"
+      end
+    end
+
+    expect 'the connection to fail' do
+      success?.should_be false
     end
   end
 end
