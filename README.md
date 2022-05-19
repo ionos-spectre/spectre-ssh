@@ -28,6 +28,8 @@ ssh:
     host: some.server.com
     username: dummy
     password: '*****'
+    key: path/to/.ssh/id_rsa
+    passphrase: '*****'
 ```
 
 ## Usage
@@ -58,6 +60,13 @@ This is helpful, when generating the connection parameters during the *spec* run
 
 ```ruby
 ssh 'some.server.com', username: 'dummy', password: '*****'  do
+  file_exists('../path/to/some/existing_file.txt').should_be true
+  owner_of('/bin').should_be 'root'
+end
+```
+
+```ruby
+ssh 'some.server.com', username: 'dummy', key: 'path/to/.ssh/id_rsa', passphrase: '*****'  do
   file_exists('../path/to/some/existing_file.txt').should_be true
   owner_of('/bin').should_be 'root'
 end
