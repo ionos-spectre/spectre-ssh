@@ -23,6 +23,24 @@ module Spectre
         @__output = ''
       end
 
+      def username user
+        @__username = username
+      end
+
+      def password pass
+        @__opts[:password] = pass
+        @__opts[:auth_methods].push 'password' unless @__opts[:auth_methods].include? 'password'
+      end
+
+      def private_key file_path
+        @__opts[:keys] = [file_path]
+        @__opts[:auth_methods].push 'publickey' unless @__opts[:auth_methods].include? 'publickey'
+      end
+
+      def passphrase phrase
+        @__opts[:passphrase] = phrase
+      end
+
       def file_exists path
         exec "ls #{path}"
         exit_code == 0
