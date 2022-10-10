@@ -166,7 +166,7 @@ module Spectre
     end
 
     Spectre.register do |config|
-      @@logger = ::Logger.new config['log_file'], progname: 'spectre/ssh'
+      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ssh')
 
       if config.key? 'ssh'
         config['ssh'].each do |name, cfg|
