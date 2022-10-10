@@ -135,8 +135,6 @@ module Spectre
 
     class << self
       def ssh name, options = {}, &block
-        raise "SSH connection '#{name}' not configured" unless @@cfg.key?(name) or options.count > 0
-
         cfg = @@cfg[name] || {}
 
         host = cfg['host'] || name
