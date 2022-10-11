@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'openssl', '~> 3.0.0'
   spec.add_runtime_dependency 'net-ssh', '~> 6.1.0'
-  spec.add_runtime_dependency 'spectre-core', '>= 1.8.0'
+  spec.add_runtime_dependency 'spectre-core', '>= 1.14.0'
   spec.add_runtime_dependency 'ed25519', '~> 1.3.0'
   spec.add_runtime_dependency 'bcrypt_pbkdf', '~> 1.1.0'
 end
