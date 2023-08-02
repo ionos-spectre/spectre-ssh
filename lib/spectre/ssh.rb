@@ -10,7 +10,7 @@ module Spectre
     class SSHError < Exception
     end
 
-    class SSHConnection < Spectre::DslClass
+    class SSHConnection < Spectre::DslBase
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 
@@ -132,10 +132,14 @@ module Spectre
       end
     end
 
+    class SshClient
+      def initialize config, logger
+        @config = config
+        @logger = logger
+      end
 
-    class << self
       def ssh name, options = {}, &block
-        cfg = @@cfg[name] || {}
+        cfg = @config[name] || {}
 
         host = cfg['host'] || name
         username = options[:username] || cfg['username']
@@ -153,26 +157,20 @@ module Spectre
         opts[:auth_methods].push 'publickey' unless opts[:keys].nil? or opts[:keys].empty?
         opts[:auth_methods].push 'password' unless opts[:password].nil?
 
-        ssh_con = SSHConnection.new(host, username, opts, @@logger)
+        ssh_con = SSHConnection.new(host, username, opts, @logger)
 
         begin
-          ssh_con.instance_eval &block
+          ssh_con._evaluate(&block)
         ensure
           ssh_con.close
         end
       end
     end
+  end
+end
 
-    Spectre.register do |config|
-      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ssh')
-
-      if config.key? 'ssh'
-        config['ssh'].each do |name, cfg|
-          @@cfg[name] = cfg
-        end
-      end
-    end
-
-    Spectre.delegate :ssh, to: self
+Spectre.define 'spectre/ssh' do |config, logger, _scope|
+  register :ssh do
+    Spectre::SSH::SshClient.new(config, logger)
   end
 end
