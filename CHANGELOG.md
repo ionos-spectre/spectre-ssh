@@ -1,3 +1,8 @@
+### v1.2.0
+
+#### Major
+ - added possibility to set proxy_host and proxy_port for ssh connection
+
 ### v1.1.0
 
 #### Minor

@@ -1,7 +1,7 @@
 require 'net/ssh'
 require 'logger'
 require 'spectre'
-
+require 'net/ssh/proxy/http'
 
 module Spectre
   module SSH
@@ -152,6 +152,10 @@ module Spectre
         opts[:auth_methods] = []
         opts[:auth_methods].push 'publickey' unless opts[:keys].nil? or opts[:keys].empty?
         opts[:auth_methods].push 'password' unless opts[:password].nil?
+
+        proxy_host = options[:proxy_host] || cfg['proxy_host']
+        proxy_port = options[:proxy_port] || cfg['proxy_port']
+        opts[:proxy] = Net::SSH::Proxy::HTTP.new(proxy_host, proxy_port) unless proxy_host.nil?
 
         ssh_con = SSHConnection.new(host, username, opts, @@logger)
 
