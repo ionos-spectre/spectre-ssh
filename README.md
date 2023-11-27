@@ -30,6 +30,8 @@ ssh:
     password: '*****'
     key: path/to/.ssh/id_rsa
     passphrase: '*****'
+    proxy_host: some_proxy_host
+    proxy_port: 1234
 ```
 
 ## Usage
@@ -49,6 +51,14 @@ Within the `ssh` block there are the following functions available
 
 ```ruby
 ssh 'some_ssh_conn' do # use connection name from config
+  file_exists('../path/to/some/existing_file.txt').should_be true
+  owner_of('/bin').should_be 'root'
+  exec 'ls -al'
+end
+```
+
+```ruby
+ssh 'some_server.com', username: 'dummy', password: '*****', proxy_host: 'some_proxy_host', proxy_port: 1234  do 
   file_exists('../path/to/some/existing_file.txt').should_be true
   owner_of('/bin').should_be 'root'
   exec 'ls -al'
