@@ -132,10 +132,12 @@ module Spectre
       end
     end
 
-
     class << self
+      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ssh'] : {}
+      @@logger = defined?(Spectre.logger) ? Spectre.logger : Logger.new(STDOUT)
+
       def ssh name, options = {}, &block
-        cfg = @@cfg[name] || {}
+        cfg = @@config[name] || {}
 
         host = cfg['host'] || name
         username = options[:username] || cfg['username']
@@ -166,17 +168,5 @@ module Spectre
         end
       end
     end
-
-    Spectre.register do |config|
-      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ssh')
-
-      if config.key? 'ssh'
-        config['ssh'].each do |name, cfg|
-          @@cfg[name] = cfg
-        end
-      end
-    end
-
-    Spectre.delegate :ssh, to: self
   end
 end
