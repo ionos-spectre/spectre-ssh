@@ -22,8 +22,8 @@ RSpec.describe 'SSH' do
         non_interactive: true,
         passphrase: nil,
         password: Spectre::CONFIG['ssh']['example']['password'],
-        port: 22
-      }
+        port: 22,
+      },
     ]
 
     net_ssh = double(Net::SSH)
@@ -39,9 +39,8 @@ RSpec.describe 'SSH' do
     allow(ssh_session).to receive(:loop)
     allow(ssh_session).to receive(:options).and_return(opts[2])
     allow(ssh_session).to receive(:host).and_return(opts[0])
-    
-    allow(Net::SSH).to receive(:start).with(*opts).and_return(ssh_session)
 
+    allow(Net::SSH).to receive(:start).with(*opts).and_return(ssh_session)
 
     Spectre::SSH.ssh 'some-data.host' do
       username 'dummy'
@@ -50,7 +49,7 @@ RSpec.describe 'SSH' do
     end
 
     expect(ssh_channel).to receive(:exec).with('ls')
-    
+
     Spectre::SSH.ssh 'example' do
       exec 'ls'
     end
