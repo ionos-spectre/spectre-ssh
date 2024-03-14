@@ -33,7 +33,7 @@ RSpec.describe 'SSH' do
     expect(ssh_channel).to receive(:exec).with('ls')
 
     ssh_session = double(Net::SSH::Connection::Session)
-    allow(ssh_session).to receive(:open_channel).and_return(ssh_channel)
+    allow(ssh_session).to receive(:open_channel).and_return(ssh_channel).and_yield(ssh_channel)
     allow(ssh_session).to receive(:closed?).and_return(false)
     allow(ssh_session).to receive(:close)
     allow(ssh_session).to receive(:loop)
