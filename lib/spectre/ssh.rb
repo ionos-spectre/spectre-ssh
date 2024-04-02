@@ -164,6 +164,7 @@ module Spectre
         opts[:proxy] = Net::SSH::Proxy::HTTP.new(proxy_host, proxy_port) unless proxy_host.nil?
 
         if @@debug
+          opts[:verbose] = Logger::DEBUG
           opts[:logger] = @@logger
         end
 
