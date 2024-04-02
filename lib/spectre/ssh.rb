@@ -125,8 +125,20 @@ module Spectre
     end
 
     class << self
-      @@config = defined?(Spectre::CONFIG) ? Spectre::CONFIG['ssh'] : {}
-      @@logger = defined?(Spectre.logger) ? Spectre.logger : Logger.new(STDOUT)
+      if defined?(Spectre::CONFIG)
+        @@config = Spectre::CONFIG['ssh']
+        @@debug = Spectre::CONFIG['debug']
+      else
+        @@config = {}
+        @@debug = false
+      end
+
+      if defined?(Spectre.logger)
+        @@logger =  Spectre.logger
+      else
+        level = $DEBUG ? Logger::DEBUG : Logger::INFO
+        @@logger = Logger.new(STDOUT, progname: 'spectre-ssh', level: level)
+      end
 
       def ssh name, options = {}, &block
         cfg = @@config[name] || {}
@@ -150,6 +162,10 @@ module Spectre
         proxy_host = options[:proxy_host] || cfg['proxy_host']
         proxy_port = options[:proxy_port] || cfg['proxy_port']
         opts[:proxy] = Net::SSH::Proxy::HTTP.new(proxy_host, proxy_port) unless proxy_host.nil?
+
+        if @@debug
+          opts[:logger] = @@logger
+        end
 
         ssh_con = SSHConnection.new(host, username, opts, @@logger)
 
