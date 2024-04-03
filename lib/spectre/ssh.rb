@@ -1,6 +1,7 @@
 require 'net/ssh'
 require 'logger'
 require 'spectre'
+require 'spectre/logging'
 require 'net/ssh/proxy/http'
 
 module Spectre
@@ -157,6 +158,11 @@ module Spectre
         proxy_port = options[:proxy_port] || cfg['proxy_port']
         opts[:proxy] = Net::SSH::Proxy::HTTP.new(proxy_host, proxy_port) unless proxy_host.nil?
 
+        if @@debug
+          opts[:logger] = @@logger.logger
+          opts[:verbose] = Logger::DEBUG
+        end
+
         ssh_con = SSHConnection.new(host, username, opts, @@logger)
 
         begin
@@ -169,8 +175,11 @@ module Spectre
 
     Spectre.register do |config|
       @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ssh')
+      @@debug = config['debug']
 
       if config.key? 'ssh'
+        @@debug = config['ssh'].delete('debug') if config['ssh'].key? 'debug'
+
         config['ssh'].each do |name, cfg|
           @@cfg[name] = cfg
         end
