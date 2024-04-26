@@ -125,6 +125,8 @@ module Spectre
     end
 
     class << self
+      @@logger = nil
+
       if defined?(Spectre::CONFIG)
         @@config = Spectre::CONFIG['ssh']
         @@debug = Spectre::CONFIG['debug']
@@ -133,11 +135,15 @@ module Spectre
         @@debug = false
       end
 
-      if defined?(Spectre.logger)
-        @@logger =  Spectre.logger
-      else
-        level = $DEBUG ? Logger::DEBUG : Logger::INFO
-        @@logger = Logger.new(STDOUT, progname: 'spectre-ssh', level: level)
+      def logger
+        return @@logger if @@logger
+
+        if defined?(Spectre.logger)
+          @@logger =  Spectre.logger
+        else
+          level = $DEBUG ? Logger::DEBUG : Logger::INFO
+          @@logger = Logger.new(STDOUT, progname: 'spectre-ssh', level: level)
+        end
       end
 
       def ssh name, options = {}, &block
@@ -165,10 +171,10 @@ module Spectre
 
         if @@debug
           opts[:verbose] = Logger::DEBUG
-          opts[:logger] = @@logger
+          opts[:logger] = logger
         end
 
-        ssh_con = SSHConnection.new(host, username, opts, @@logger)
+        ssh_con = SSHConnection.new(host, username, opts, logger)
 
         begin
           ssh_con.instance_eval &block
