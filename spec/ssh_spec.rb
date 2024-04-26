@@ -23,7 +23,7 @@ RSpec.describe 'SSH' do
         passphrase: nil,
         password: Spectre::CONFIG['ssh']['example']['password'],
         port: 22,
-      },
+      }
     ]
 
     double(Net::SSH)

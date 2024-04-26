@@ -6,7 +6,7 @@ module Spectre
   module SSH
     @@cfg = {}
 
-    class SSHError < Exception
+    class SSHError < StandardError
     end
 
     class SSHConnection
@@ -44,7 +44,7 @@ module Spectre
 
       def file_exists path
         exec "ls #{path}"
-        exit_code == 0
+        @exit_code.nil? || @exit_code.zero?
       end
 
       def owner_of path
@@ -53,19 +53,20 @@ module Spectre
       end
 
       def connect!
-        return unless @session == nil or @session.closed?
+        return unless @session.nil? or @session.closed?
 
         begin
           @session = Net::SSH.start(@host, @username, @opts)
         rescue SocketError
-          raise SSHError.new("Unable to connect to #{@host} with user #{@username}")
+          raise SSHError, "Unable to connect to #{@host} with user #{@username}"
         rescue Net::SSH::AuthenticationFailed
-          raise SSHError.new("Authentication failed for #{@username}@#{@host}. Please check password, SSH keys and passphrases.")
+          raise SSHError, "Authentication failed for #{@username}@#{@host}. \
+            Please check password, SSH keys and passphrases."
         end
       end
 
       def close
-        return unless @session and not @session.closed?
+        return unless @session and !@session.closed?
 
         @session.close
       end
@@ -79,13 +80,13 @@ module Spectre
           @output = "successfully connected to #{@host} with user #{@username}"
           @exit_code = 0
           return true
-        rescue Exception => e
+        rescue StandardError => e
           @logger.error e.message
           @output = "unable to connect to #{@host} with user #{@username}"
           @exit_code = 1
         end
 
-        return false
+        false
       end
 
       def exec command
@@ -139,14 +140,14 @@ module Spectre
         return @@logger if @@logger
 
         if defined?(Spectre.logger)
-          @@logger =  Spectre.logger
+          @@logger = Spectre.logger
         else
           level = $DEBUG ? Logger::DEBUG : Logger::INFO
-          @@logger = Logger.new(STDOUT, progname: 'spectre-ssh', level: level)
+          @@logger = Logger.new($stdout, progname: 'spectre-ssh', level:)
         end
       end
 
-      def ssh name, options = {}, &block
+      def ssh(name, options = {}, &)
         cfg = @@config[name] || {}
 
         host = cfg['host'] || name
@@ -177,7 +178,7 @@ module Spectre
         ssh_con = SSHConnection.new(host, username, opts, logger)
 
         begin
-          ssh_con.instance_eval &block
+          ssh_con.instance_eval(&)
         ensure
           ssh_con.close
         end
@@ -186,7 +187,7 @@ module Spectre
   end
 end
 
-%i{ssh}.each do |method|
+%i[ssh].each do |method|
   define_method(method) do |*args, &block|
     Spectre::SSH.send(method, *args, &block)
   end
