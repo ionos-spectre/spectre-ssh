@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = 'spectre-ssh'
-  spec.version       = '1.2.2'
+  spec.version       = '1.2.3'
   spec.authors       = ['Christian Neubauer']
   spec.email         = ['christian.neubauer@ionos.com']
 
@@ -20,9 +20,9 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'openssl', '~> 3.2.0'
-  spec.add_runtime_dependency 'net-ssh', '~> 7.2.0'
+  spec.add_runtime_dependency 'openssl'
+  spec.add_runtime_dependency 'net-ssh'
   spec.add_runtime_dependency 'spectre-core', '>= 1.14.6'
-  spec.add_runtime_dependency 'ed25519', '~> 1.3.0'
-  spec.add_runtime_dependency 'bcrypt_pbkdf', '~> 1.1.0'
+  spec.add_runtime_dependency 'ed25519'
+  spec.add_runtime_dependency 'bcrypt_pbkdf'
 end
