@@ -10,6 +10,8 @@ module Spectre
     end
 
     class SSHConnection
+      include Spectre::Delegate if defined? Spectre::Delegate
+
       attr_reader :exit_code, :output
 
       def initialize host, username, opts, logger
