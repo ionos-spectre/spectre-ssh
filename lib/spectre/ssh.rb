@@ -137,14 +137,11 @@ module Spectre
       end
 
       def logger
-        return @@logger if @@logger
-
-        if defined?(Spectre.logger)
-          @@logger = Spectre.logger
-        else
-          level = $DEBUG ? Logger::DEBUG : Logger::INFO
-          @@logger = Logger.new($stdout, progname: 'spectre-ssh', level:)
-        end
+        @@logger ||= if defined?(Spectre)
+                       Spectre.logger
+                     else
+                       Logger.new($stdout, progname: 'spectre/ssh')
+                     end
       end
 
       def ssh(name, options = {}, &)

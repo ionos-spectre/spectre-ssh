@@ -8,6 +8,10 @@ module Spectre
       },
     },
   }
+
+  def self.logger
+    ::Logger.new(CONFIG['log_file'])
+  end
 end
 
 require_relative '../lib/spectre/ssh'
