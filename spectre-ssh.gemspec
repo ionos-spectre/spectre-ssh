@@ -19,8 +19,8 @@ Gem::Specification.new do |spec|
   spec.files = Dir.glob('lib/**/*')
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'bcrypt_pbkdf', '~> 1.1.0'
-  spec.add_runtime_dependency 'ed25519', '~> 1.3.0'
-  spec.add_runtime_dependency 'net-ssh', '~> 7.2.0'
-  spec.add_runtime_dependency 'openssl', '~> 3.2.0'
+  spec.add_runtime_dependency 'bcrypt_pbkdf'
+  spec.add_runtime_dependency 'ed25519'
+  spec.add_runtime_dependency 'net-ssh'
+  spec.add_runtime_dependency 'openssl'
 end
