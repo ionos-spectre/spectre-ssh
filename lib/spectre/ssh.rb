@@ -6,10 +6,10 @@ module Spectre
   module SSH
     @@cfg = {}
 
-    class SSHError < StandardError
+    class SshError < StandardError
     end
 
-    class SSHConnection
+    class SshConnection
       include Spectre::Delegate if defined? Spectre::Delegate
 
       attr_reader :exit_code, :output
@@ -60,9 +60,9 @@ module Spectre
         begin
           @session = Net::SSH.start(@host, @username, @opts)
         rescue SocketError
-          raise SSHError, "Unable to connect to #{@host} with user #{@username}"
+          raise SshError, "Unable to connect to #{@host} with user #{@username}"
         rescue Net::SSH::AuthenticationFailed
-          raise SSHError, "Authentication failed for #{@username}@#{@host}. \
+          raise SshError, "Authentication failed for #{@username}@#{@host}. \
             Please check password, SSH keys and passphrases."
         end
       end
@@ -127,27 +127,15 @@ module Spectre
       end
     end
 
-    class << self
-      @@logger = nil
-
-      if defined?(Spectre::CONFIG)
-        @@config = Spectre::CONFIG['ssh']
-        @@debug = Spectre::CONFIG['debug']
-      else
-        @@config = {}
-        @@debug = false
-      end
-
-      def logger
-        @@logger ||= if defined?(Spectre)
-                       Spectre.logger
-                     else
-                       Logger.new($stdout, progname: 'spectre/ssh')
-                     end
+    class Client
+      def initialize config, logger
+        @config = config['ssh']
+        @logger = logger
+        @debug = config['debug']
       end
 
       def ssh(name, options = {}, &)
-        cfg = @@config[name] || {}
+        cfg = @config[name] || {}
 
         host = cfg['host'] || name
         username = options[:username] || cfg['username']
@@ -169,12 +157,12 @@ module Spectre
         proxy_port = options[:proxy_port] || cfg['proxy_port']
         opts[:proxy] = Net::SSH::Proxy::HTTP.new(proxy_host, proxy_port) unless proxy_host.nil?
 
-        if @@debug
+        if @debug
           opts[:verbose] = Logger::DEBUG
-          opts[:logger] = logger
+          opts[:logger] = @logger
         end
 
-        ssh_con = SSHConnection.new(host, username, opts, logger)
+        ssh_con = SshConnection.new(host, username, opts, @logger)
 
         begin
           ssh_con.instance_eval(&)
@@ -184,10 +172,6 @@ module Spectre
       end
     end
   end
-end
 
-%i[ssh].each do |method|
-  define_method(method) do |*args, &block|
-    Spectre::SSH.send(method, *args, &block)
-  end
+  Engine.register(SSH::Client, :ssh)
 end
