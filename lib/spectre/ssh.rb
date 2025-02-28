@@ -1,50 +1,52 @@
 require 'net/ssh'
-require 'logger'
-require 'spectre'
-require 'spectre/logging'
 require 'net/ssh/proxy/http'
+require 'logger'
 
 module Spectre
   module SSH
     @@cfg = {}
 
-    class SSHError < Exception
+    class SshError < StandardError
     end
 
-    class SSHConnection < Spectre::DslClass
+    class SshConnection
+      include Spectre::Delegate if defined? Spectre::Delegate
+
+      attr_reader :exit_code, :output
+
       def initialize host, username, opts, logger
         opts[:non_interactive] = true
 
-        @__logger = logger
-        @__host = host
-        @__username = username
-        @__opts = opts
-        @__session = nil
-        @__exit_code = nil
-        @__output = ''
+        @logger = logger
+        @host = host
+        @username = username
+        @opts = opts
+        @session = nil
+        @exit_code = nil
+        @output = ''
       end
 
       def username user
-        @__username = user
+        @username = user
       end
 
       def password pass
-        @__opts[:password] = pass
-        @__opts[:auth_methods].push 'password' unless @__opts[:auth_methods].include? 'password'
+        @opts[:password] = pass
+        @opts[:auth_methods].push('password') unless @opts[:auth_methods].include? 'password'
       end
 
       def private_key file_path
-        @__opts[:keys] = [file_path]
-        @__opts[:auth_methods].push 'publickey' unless @__opts[:auth_methods].include? 'publickey'
+        @opts[:keys] = [file_path]
+        @opts[:auth_methods].push('publickey') unless @opts[:auth_methods].include? 'publickey'
       end
 
       def passphrase phrase
-        @__opts[:passphrase] = phrase
+        @opts[:passphrase] = phrase
       end
 
       def file_exists path
         exec "ls #{path}"
-        exit_code == 0
+        @exit_code.nil? || @exit_code.zero?
       end
 
       def owner_of path
@@ -53,90 +55,87 @@ module Spectre
       end
 
       def connect!
-        return unless @__session == nil or @__session.closed?
+        return unless @session.nil? or @session.closed?
 
         begin
-          @__session = Net::SSH.start(@__host, @__username, @__opts)
+          @session = Net::SSH.start(@host, @username, @opts)
         rescue SocketError
-          raise SSHError.new("Unable to connect to #{@__host} with user #{@__username}")
+          raise SshError, "Unable to connect to #{@host} with user #{@username}"
         rescue Net::SSH::AuthenticationFailed
-          raise SSHError.new("Authentication failed for #{@__username}@#{@__host}. Please check password, SSH keys and passphrases.")
+          raise SshError, "Authentication failed for #{@username}@#{@host}. \
+            Please check password, SSH keys and passphrases."
         end
       end
 
       def close
-        return unless @__session and not @__session.closed?
+        return unless @session and !@session.closed?
 
-        @__session.close
+        @session.close
       end
 
       def can_connect?
-        @__output = nil
+        @output = nil
 
         begin
           connect!
-          @__session.open_channel.close
-          @__output = "successfully connected to #{@__host} with user #{@__username}"
-          @__exit_code = 0
+          @session.open_channel.close
+          @output = "successfully connected to #{@host} with user #{@username}"
+          @exit_code = 0
           return true
-        rescue Exception => e
-          @__logger.error e.message
-          @__output = "unable to connect to #{@__host} with user #{@__username}"
-          @__exit_code = 1
+        rescue StandardError => e
+          @logger.error e.message
+          @output = "unable to connect to #{@host} with user #{@username}"
+          @exit_code = 1
         end
 
-        return false
+        false
       end
 
       def exec command
         connect!
 
-        log_str = "#{@__session.options[:user]}@#{@__session.host} -p #{@__session.options[:port]} #{command}"
+        log_str = "ssh #{@username}@#{@session.host} -p #{@session.options[:port]} #{command}"
 
-        @channel = @__session.open_channel do |channel|
+        @session.open_channel do |channel|
           channel.exec(command) do |_ch, success|
-            abort "could not execute #{command} on #{@__session.host}" unless success
+            abort "could not execute #{command} on #{@session.host}" unless success
 
-            @__output = ''
+            @output = ''
 
-            channel.on_data do |_, data|
-              @__output += data
+            channel.on_data do |_ch, data|
+              @output += data
             end
 
-            channel.on_extended_data do |_, _type, data|
-              @__output += data
+            channel.on_extended_data do |_ch, _type, data|
+              @output += data
             end
 
-            channel.on_request('exit-status') do |_, data|
-              @__exit_code = data.read_long
+            channel.on_request('exit-status') do |_ch, data|
+              @exit_code = data.read_long
             end
 
-            # channel.on_request('exit-signal') do |ch, data|
-            #   exit_code = data.read_long
-            # end
+            channel.on_request('exit-signal') do |_ch, data|
+              @exit_code = data.read_long
+            end
           end
-        end
+        end.wait
 
-        @channel.wait
-        @__session.loop
+        @session.loop
 
-        log_str += "\n" + @__output
-        @__logger.info log_str
-      end
-
-      def output
-        @__output
-      end
-
-      def exit_code
-        @__exit_code
+        log_str += "\n" + @output
+        @logger.info(log_str)
       end
     end
 
+    class Client
+      def initialize config, logger
+        @config = config['ssh']
+        @logger = logger
+        @debug = config['debug']
+      end
 
-    class << self
-      def ssh name, options = {}, &block
-        cfg = @@cfg[name] || {}
+      def ssh(name, options = {}, &)
+        cfg = @config[name] || {}
 
         host = cfg['host'] || name
         username = options[:username] || cfg['username']
@@ -151,41 +150,28 @@ module Spectre
         opts[:passphrase] = options[:passphrase] || cfg['passphrase']
 
         opts[:auth_methods] = []
-        opts[:auth_methods].push 'publickey' unless opts[:keys].nil? or opts[:keys].empty?
-        opts[:auth_methods].push 'password' unless opts[:password].nil?
+        opts[:auth_methods].push('publickey') unless opts[:keys].nil? or opts[:keys].empty?
+        opts[:auth_methods].push('password') unless opts[:password].nil?
 
         proxy_host = options[:proxy_host] || cfg['proxy_host']
         proxy_port = options[:proxy_port] || cfg['proxy_port']
         opts[:proxy] = Net::SSH::Proxy::HTTP.new(proxy_host, proxy_port) unless proxy_host.nil?
 
-        if @@debug
-          opts[:logger] = @@logger.logger
+        if @debug
           opts[:verbose] = Logger::DEBUG
+          opts[:logger] = @logger
         end
 
-        ssh_con = SSHConnection.new(host, username, opts, @@logger)
+        ssh_con = SshConnection.new(host, username, opts, @logger)
 
         begin
-          ssh_con.instance_eval &block
+          ssh_con.instance_eval(&)
         ensure
           ssh_con.close
         end
       end
     end
-
-    Spectre.register do |config|
-      @@logger = Spectre::Logging::ModuleLogger.new(config, 'spectre/ssh')
-      @@debug = config['debug']
-
-      if config.key? 'ssh'
-        @@debug = config['ssh'].delete('debug') if config['ssh'].key? 'debug'
-
-        config['ssh'].each do |name, cfg|
-          @@cfg[name] = cfg
-        end
-      end
-    end
-
-    Spectre.delegate :ssh, to: self
   end
+
+  Engine.register(SSH::Client, :ssh) if defined? Engine
 end
