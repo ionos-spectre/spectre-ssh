@@ -1,18 +1,12 @@
-module Spectre
-  CONFIG = {
-    'ssh' => {
-      'example' => {
-        'host' => 'some-data.host',
-        'username' => 'dummy',
-        'password' => '<some-secret-password>',
-      },
+CONFIG = {
+  'ssh' => {
+    'example' => {
+      'host' => 'some-data.host',
+      'username' => 'dummy',
+      'password' => '<some-secret-password>',
     },
-  }
-
-  def self.logger
-    ::Logger.new(CONFIG['log_file'])
-  end
-end
+  },
+}
 
 require_relative '../lib/spectre/ssh'
 
@@ -25,7 +19,7 @@ RSpec.describe 'SSH' do
         auth_methods: ['password'],
         non_interactive: true,
         passphrase: nil,
-        password: Spectre::CONFIG['ssh']['example']['password'],
+        password: CONFIG['ssh']['example']['password'],
         port: 22,
       }
     ]
@@ -67,9 +61,11 @@ RSpec.describe 'SSH' do
     expect(ssh_channel).to receive(:exec).with('ls dummy.txt')
     expect(ssh_channel).to receive(:exec).with('stat -c %U dummy.txt')
 
+    client = Spectre::SSH::Client.new(CONFIG, Logger.new(StringIO.new))
+
     test_output = nil
 
-    Spectre::SSH.ssh 'some-data.host' do
+    client.ssh 'some-data.host' do
       username 'dummy'
       password '<some-secret-password>'
       exec 'ls'
@@ -83,7 +79,7 @@ RSpec.describe 'SSH' do
     expect(ssh_channel).to receive(:exec).with('ls')
     expect(test_output).to eq('some data')
 
-    Spectre::SSH.ssh 'example' do
+    client.ssh 'example' do
       exec 'ls'
     end
   end

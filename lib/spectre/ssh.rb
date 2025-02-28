@@ -173,5 +173,5 @@ module Spectre
     end
   end
 
-  Engine.register(SSH::Client, :ssh)
+  Engine.register(SSH::Client, :ssh) if defined? Engine
 end
