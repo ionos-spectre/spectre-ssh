@@ -129,7 +129,7 @@ module Spectre
 
     class Client
       def initialize config, logger
-        @config = config['ssh']
+        @config = config['ssh'] || {}
         @logger = logger
         @debug = config['debug']
       end
