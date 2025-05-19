@@ -91,7 +91,7 @@ module Spectre
         false
       end
 
-      def exec command
+      def exec command, log: true
         connect!
 
         log_str = "ssh #{@username}@#{@session.host} -p #{@session.options[:port]} #{command}"
@@ -123,7 +123,7 @@ module Spectre
         @session.loop
 
         log_str += "\n" + @output
-        @logger.info(log_str)
+        @logger.info(log_str) if log
       end
     end
 
